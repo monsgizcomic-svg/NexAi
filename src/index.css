@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2B2B35;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3E3E4D;
+}
+
+/* Hide default input outlines */
+textarea:focus, select:focus, button:focus {
+  outline: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* AI Node Thinking Animations */
+@keyframes thinkingPulse {
+  0%, 100% {
+    transform: scale(0.92);
+    filter: drop-shadow(0 0 2px rgba(167, 139, 250, 0.2));
+  }
+  50% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 12px rgba(167, 139, 250, 0.85));
+  }
+}
+
+@keyframes nodeRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes circlePulseOne {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 1;
+  }
+}
+
+@keyframes circlePulseTwo {
+  0%, 100% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+}
+
+.animate-node-thinking {
+  animation: thinkingPulse 2.2s ease-in-out infinite, nodeRotate 7s linear infinite;
+  transform-origin: center;
+}
+
+.animate-node-dot-1 {
+  animation: circlePulseOne 1.8s ease-in-out infinite;
+  transform-origin: 12px 4px;
+}
+
+.animate-node-dot-2 {
+  animation: circlePulseTwo 2s ease-in-out infinite;
+  transform-origin: 6px 17px;
+}
+
+.animate-node-dot-3 {
+  animation: circlePulseOne 2.2s ease-in-out infinite;
+  transform-origin: 18px 15px;
+}
+
+.animate-node-center {
+  animation: circlePulseTwo 1.5s ease-in-out infinite;
+  transform-origin: 12px 12px;
+}
+

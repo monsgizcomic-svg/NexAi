@@ -1,0 +1,6 @@
+{
+  "name": "NexAi",
+  "description": "Asisten AI pintar untuk tanya apa saja, membuat gambar, dan deep research.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
