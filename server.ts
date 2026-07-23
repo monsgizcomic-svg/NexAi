@@ -12,20 +12,33 @@ const PORT = 3000;
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// Helper: Retrieve and shuffle all unique keys configured for rotation
-function getAllGeminiApiKeys(): string[] {
+// Helper: Retrieve and shuffle all unique keys configured for rotation (supports KEY1, KEY2, KEY3, etc.)
+function getAllApiKeys(): string[] {
   const keys: string[] = [];
-  for (let i = 1; i <= 10; i++) {
-    const val = process.env[`GEMINI_KEY_${i}`];
-    if (val) {
-      keys.push(val);
+
+  // Check KEY1..KEY50, KEY_1..KEY_50, GEMINI_KEY_1..GEMINI_KEY_50
+  for (let i = 1; i <= 50; i++) {
+    if (process.env[`KEY${i}`]) keys.push(process.env[`KEY${i}`]!);
+    if (process.env[`KEY_${i}`]) keys.push(process.env[`KEY_${i}`]!);
+    if (process.env[`GEMINI_KEY_${i}`]) keys.push(process.env[`GEMINI_KEY_${i}`]!);
+  }
+
+  // Check generic key names
+  const fallbackNames = ["KEY", "API_KEY", "NEXAI_KEY", "NEXAI_API_KEY", "GEMINI_API_KEY"];
+  for (const name of fallbackNames) {
+    if (process.env[name]) keys.push(process.env[name]!);
+  }
+
+  // Scan all process.env for any matching KEY<number> pattern
+  for (const envKey of Object.keys(process.env)) {
+    if (/^KEY_?\d+$/i.test(envKey) || /^GEMINI_KEY_?\d+$/i.test(envKey) || /^NEXAI_KEY_?\d+$/i.test(envKey)) {
+      if (process.env[envKey]) {
+        keys.push(process.env[envKey]!);
+      }
     }
   }
-  const defaultKey = process.env.GEMINI_API_KEY;
-  if (defaultKey) {
-    keys.push(defaultKey);
-  }
-  const uniqueKeys = Array.from(new Set(keys)).filter(Boolean);
+
+  const uniqueKeys = Array.from(new Set(keys)).map((k) => k.trim()).filter(Boolean);
   // Shuffle keys so they get selected uniformly
   return uniqueKeys.sort(() => Math.random() - 0.5);
 }
@@ -41,10 +54,10 @@ app.post("/api/chat", async (req, res) => {
       return res.status(400).json({ error: "Messages array is required." });
     }
 
-    const keys = getAllGeminiApiKeys();
+    const keys = getAllApiKeys();
     if (keys.length === 0) {
       return res.status(500).json({
-        error: "Kunci API NexAi belum dikonfigurasi. Harap tambahkan API_KEY di rahasia lingkungan Anda.",
+        error: "Kunci API NexAi belum dikonfigurasi. Harap tambahkan KEY1, KEY2, dll. di Environment Variables Vercel Anda.",
       });
     }
 
@@ -201,7 +214,7 @@ app.post("/api/image", async (req, res) => {
       return res.status(400).json({ error: "Prompt is required." });
     }
 
-    const keys = getAllGeminiApiKeys();
+    const keys = getAllApiKeys();
     let imageUrl = "";
     let lastError: any = null;
 
