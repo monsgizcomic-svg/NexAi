@@ -380,11 +380,11 @@ export default function App() {
       });
 
       let replyText = "";
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        const data = await res.json();
-        replyText = data.text;
+        replyText = data.text || "Terima kasih, pesan Anda telah diterima.";
       } else {
-        throw new Error("API call failed");
+        replyText = data.error || data.text || "Terjadi kesalahan saat memproses permintaan. Silakan periksa kunci API Anda.";
       }
 
       // Update session with received reply
