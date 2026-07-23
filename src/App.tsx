@@ -4,9 +4,11 @@ import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
 import ChatArea from "./components/ChatArea";
 import InputZone from "./components/InputZone";
+import AuthModal from "./components/AuthModal";
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [currentId, setCurrentId] = useState<number | null>(null);
@@ -524,6 +526,7 @@ export default function App() {
         onLogout={handleLogout}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        onOpenAuthModal={() => setAuthModalOpen(true)}
       />
 
       <div className="flex-1 flex flex-col min-w-0 relative">
@@ -533,6 +536,9 @@ export default function App() {
           title={currentSession ? currentSession.title : "obrolan-baru"}
           incognito={currentSession ? currentSession.incognito : false}
           onToggleIncognito={handleToggleIncognito}
+          user={user}
+          onOpenAuthModal={() => setAuthModalOpen(true)}
+          onLogout={handleLogout}
         />
 
         {/* Incognito mode banner indicator */}
@@ -581,6 +587,16 @@ export default function App() {
           disabled={isSending}
         />
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onLoginSuccess={(u) => {
+          setUser(u);
+          localStorage.setItem("nexai_session", JSON.stringify(u));
+        }}
+      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ interface SidebarProps {
   onLogout: () => void;
   isOpen: boolean;
   onClose: () => void;
+  onOpenAuthModal: () => void;
 }
 
 export default function Sidebar({
@@ -22,6 +23,7 @@ export default function Sidebar({
   onLogout,
   isOpen,
   onClose,
+  onOpenAuthModal,
 }: SidebarProps) {
   const visibleSessions = sessions.filter((s) => !s.incognito);
 
@@ -154,19 +156,19 @@ export default function Sidebar({
             </div>
           ) : (
             <div
-              className="p-3 rounded-xl bg-[#1B1B22] border border-[#2B2B35] text-center"
+              className="p-3 rounded-xl bg-[#1B1B22] border border-[#2B2B35] text-center flex flex-col gap-2"
               id="loginCard"
             >
-              <p className="text-[11.5px] text-[#8D8A99] leading-relaxed mb-2.5">
-                Masuk lewat NexonPortal buat lanjut chat.
+              <p className="text-[11.5px] text-[#8D8A99] leading-relaxed">
+                Masuk untuk menyimpan riwayat & menggunakan fitur penuh.
               </p>
-              <a
-                href="https://nexon.my.id"
-                className="block text-center bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-400 font-medium text-xs py-2 rounded-lg transition-colors"
-                id="loginLink"
+              <button
+                onClick={onOpenAuthModal}
+                className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs py-2 rounded-lg transition-all cursor-pointer active:scale-98 shadow-md shadow-violet-600/20 flex items-center justify-center gap-1.5"
+                id="loginBtn"
               >
-                Masuk
-              </a>
+                <span>Masuk / Daftar</span>
+              </button>
             </div>
           )}
         </div>
