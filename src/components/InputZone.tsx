@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Plus, Globe, Search, Mic, ArrowUp, X, ChevronDown, Brain, Sparkles } from "lucide-react";
+import { Plus, Globe, Search, Mic, ArrowUp, X, ChevronDown, Brain, Sparkles, Image as ImageIcon, Video as VideoIcon } from "lucide-react";
 import { Attachment } from "../types";
 
 interface InputZoneProps {
@@ -127,9 +127,9 @@ export default function InputZone({
               setInput("Buat gambar tentang: ");
               textareaRef.current?.focus();
             }}
-            className="flex items-center gap-1.5 bg-[#1B1B22]/60 hover:bg-violet-500/10 border border-[#2B2B35] hover:border-violet-500/30 text-[#8D8A99] hover:text-violet-400 text-xs px-3 py-1.5 rounded-full cursor-pointer transition-all shrink-0"
+            className="flex items-center gap-1.5 bg-[#1B1B22]/60 hover:theme-bg-subtle border border-[#2B2B35] hover:theme-border text-[#8D8A99] hover:theme-text-accent text-xs px-3 py-1.5 rounded-full cursor-pointer transition-all shrink-0"
           >
-            <span>🎨</span>
+            <ImageIcon className="w-3.5 h-3.5" />
             <span>Buat Gambar</span>
           </button>
           <button
@@ -137,9 +137,9 @@ export default function InputZone({
               setInput("Buat video tentang: ");
               textareaRef.current?.focus();
             }}
-            className="flex items-center gap-1.5 bg-[#1B1B22]/60 hover:bg-violet-500/10 border border-[#2B2B35] hover:border-violet-500/30 text-[#8D8A99] hover:text-violet-400 text-xs px-3 py-1.5 rounded-full cursor-pointer transition-all shrink-0"
+            className="flex items-center gap-1.5 bg-[#1B1B22]/60 hover:theme-bg-subtle border border-[#2B2B35] hover:theme-border text-[#8D8A99] hover:theme-text-accent text-xs px-3 py-1.5 rounded-full cursor-pointer transition-all shrink-0"
           >
-            <span>🎥</span>
+            <VideoIcon className="w-3.5 h-3.5" />
             <span>Buat Video</span>
           </button>
           <div className="h-4 w-[1px] bg-[#2B2B35] mx-1 shrink-0" />
@@ -158,7 +158,7 @@ export default function InputZone({
       )}
 
       {/* Input Shell */}
-      <div className="max-w-2xl mx-auto bg-[#131318] border border-[#2B2B35] focus-within:border-violet-500/50 focus-within:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] rounded-2xl p-3 md:p-3.5 flex flex-col gap-2 transition-all">
+      <div className="max-w-2xl mx-auto bg-[#131318] border border-[#2B2B35] focus-within:theme-border focus-within:shadow-[0_0_15px_var(--theme-accent-bg)] rounded-2xl p-3 md:p-3.5 flex flex-col gap-2 transition-all">
         <textarea
           ref={textareaRef}
           value={input}
@@ -194,7 +194,7 @@ export default function InputZone({
               onClick={() => setWebSearch(!webSearch)}
               className={`shrink-0 w-7.5 h-7.5 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${
                 webSearch
-                  ? "bg-violet-500/10 border-violet-500/30 text-violet-400"
+                  ? "theme-bg-subtle theme-border theme-text-accent"
                   : "bg-transparent border-transparent text-[#8D8A99] hover:bg-[#1B1B22] hover:text-[#EDEBF2]"
               }`}
               title="Cari web"
@@ -207,7 +207,7 @@ export default function InputZone({
               onClick={() => setDeepResearch(!deepResearch)}
               className={`shrink-0 w-7.5 h-7.5 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${
                 deepResearch
-                  ? "bg-violet-500/10 border-violet-500/30 text-violet-400"
+                  ? "theme-bg-subtle theme-border theme-text-accent"
                   : "bg-transparent border-transparent text-[#8D8A99] hover:bg-[#1B1B22] hover:text-[#EDEBF2]"
               }`}
               title="Deep Research (riset mendalam multi-langkah)"
@@ -226,9 +226,9 @@ export default function InputZone({
               title="Setelan Model & Berpikir"
               id="unifiedModelSettingsBtn"
             >
-              <Brain className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+              <Brain className="w-3.5 h-3.5 theme-text-accent shrink-0" />
               <span className="truncate max-w-[130px]">
-                {model === "nexai-3.3" ? "NexAi 3.3" : model === "nexai-2.9" ? "NexAi 2.9" : "NexAi 2.4"}
+                {model === "nexai-3.5" ? "NexAi 3.5" : model === "nexai-3.3" ? "NexAi 3.3" : model === "nexai-2.9" ? "NexAi 2.9" : "NexAi 2.4"}
                 <span className="text-[#8D8A99] font-normal text-[11px]"> • {effort.charAt(0).toUpperCase() + effort.slice(1)}</span>
               </span>
               <ChevronDown className={`w-3.5 h-3.5 text-[#8D8A99] transition-transform duration-200 shrink-0 ${showSettings ? 'rotate-180' : ''}`} />
@@ -239,7 +239,7 @@ export default function InputZone({
               <div className="absolute bottom-11 right-0 w-[280px] bg-[#141419] border border-[#2B2B35] rounded-xl p-3.5 shadow-2xl z-50 flex flex-col gap-3 animate-fadeIn">
                 <div className="flex items-center justify-between border-b border-[#2B2B35] pb-2">
                   <span className="text-xs font-semibold text-[#EDEBF2] flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+                    <Sparkles className="w-3.5 h-3.5 theme-text-accent" />
                     Model & Berpikir
                   </span>
                   <button 
@@ -254,16 +254,17 @@ export default function InputZone({
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[10px] font-bold text-[#8D8A99] uppercase tracking-wider">Pilih Model</span>
                   {[
-                    { id: "nexai-3.3", name: "NexAi 3.3 (Cerdas)", desc: "Akurasi tinggi & reasoning kuat (NexAi Core Pro)" },
-                    { id: "nexai-2.9", name: "NexAi 2.9 (Cepat)", desc: "Sangat responsif & seimbang (NexAi Core Standard)" },
-                    { id: "nexai-2.4", name: "NexAi 2.4 (Ringan)", desc: "Efisien untuk chat umum (NexAi Core Lite)" },
+                    { id: "nexai-3.5", name: "NexAi 3.5 (Paling Cerdas)", desc: "Akurasi & responsivitas terbaik (NexAi Ultra Engine)" },
+                    { id: "nexai-3.3", name: "NexAi 3.3 (Analitis)", desc: "Coding & reasoning tinggi (NexAi Pro Engine)" },
+                    { id: "nexai-2.9", name: "NexAi 2.9 (Cepat)", desc: "Responsif & seimbang (NexAi Speed Engine)" },
+                    { id: "nexai-2.4", name: "NexAi 2.4 (Ringan)", desc: "Sangat cepat & efisien (NexAi Lite Engine)" },
                   ].map((m) => (
                     <button
                       key={m.id}
                       onClick={() => setModel(m.id)}
                       className={`w-full text-left p-2 rounded-lg border flex flex-col transition-all cursor-pointer ${
                         model === m.id
-                          ? "bg-violet-500/10 border-violet-500/45 text-violet-300"
+                          ? "theme-bg-subtle theme-border theme-text-accent"
                           : "bg-transparent border-transparent text-[#8D8A99] hover:bg-[#20202B]/50 hover:text-[#EDEBF2]"
                       }`}
                     >
@@ -283,7 +284,7 @@ export default function InputZone({
                         onClick={() => setEffort(eff)}
                         className={`text-[10.5px] py-1.5 rounded-md font-medium capitalize cursor-pointer transition-all ${
                           effort === eff
-                            ? "bg-violet-500 text-[#0A0A0F]"
+                            ? "theme-btn-primary text-white"
                             : "text-[#8D8A99] hover:text-[#EDEBF2] hover:bg-[#20202B]/40"
                         }`}
                       >
@@ -311,7 +312,7 @@ export default function InputZone({
             <button
               disabled={disabled || (!input.trim() && pendingAttachments.length === 0)}
               onClick={() => onSend(input)}
-              className="shrink-0 w-8 h-8 rounded-lg border-none bg-violet-500 hover:bg-violet-400 disabled:opacity-30 disabled:cursor-not-allowed text-[#0A0A0F] flex items-center justify-center cursor-pointer transition-all active:scale-95"
+              className="shrink-0 w-8 h-8 rounded-lg border-none theme-btn-primary disabled:opacity-30 disabled:cursor-not-allowed text-white flex items-center justify-center cursor-pointer transition-all active:scale-95 shadow-sm"
               aria-label="Kirim"
               id="sendBtn"
             >

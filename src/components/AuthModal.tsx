@@ -109,8 +109,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[#1F1F27] bg-[#0A0A0F]/50">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-violet-400" />
+            <div className="w-8 h-8 rounded-xl theme-bg-subtle border theme-border flex items-center justify-center">
+              <Sparkles className="w-4 h-4 theme-text-accent" />
             </div>
             <div>
               <h3 className="font-sans font-semibold text-base text-[#EDEBF2]">Masuk ke NexAi</h3>
@@ -164,7 +164,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
                 : "text-[#8D8A99] hover:text-[#EDEBF2]"
             }`}
           >
-            <Building2 className="w-3.5 h-3.5 text-violet-400" />
+            <Building2 className="w-3.5 h-3.5 theme-text-accent" />
             <span>Domain SSO</span>
           </button>
 
@@ -251,20 +251,20 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
                       key={acc.email}
                       onClick={() => handleGoogleAuth(acc.email, acc.name)}
                       disabled={loading}
-                      className="w-full p-2.5 bg-[#1B1B22] hover:bg-[#252530] border border-[#2B2B35] hover:border-violet-500/40 rounded-xl flex items-center justify-between text-left transition-all cursor-pointer group"
+                      className="w-full p-2.5 bg-[#1B1B22] hover:bg-[#252530] border border-[#2B2B35] hover:theme-border rounded-xl flex items-center justify-between text-left transition-all cursor-pointer group"
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-violet-500/20 text-violet-300 font-bold text-xs flex items-center justify-center">
+                        <div className="w-7 h-7 rounded-full theme-bg-subtle theme-text-accent font-bold text-xs flex items-center justify-center border theme-border">
                           {acc.name.charAt(0)}
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-xs font-semibold text-[#EDEBF2] group-hover:text-violet-300 transition-colors">
+                          <span className="text-xs font-semibold text-[#EDEBF2] group-hover:theme-text-accent transition-colors">
                             {acc.name}
                           </span>
                           <span className="text-[10.5px] text-[#8D8A99]">{acc.email}</span>
                         </div>
                       </div>
-                      <span className="text-[10px] text-violet-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-[10px] theme-text-accent font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                         Pilih &rarr;
                       </span>
                     </button>
@@ -382,7 +382,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-1 py-2.5 px-4 bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 disabled:opacity-50 shadow-md shadow-violet-600/20"
+                className="w-full mt-1 py-2.5 px-4 theme-btn-primary font-semibold text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

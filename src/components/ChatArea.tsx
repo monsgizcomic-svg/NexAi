@@ -29,9 +29,9 @@ export default function ChatArea({ messages, onSelectSuggestion }: ChatAreaProps
     return (
       <div className="flex-1 overflow-y-auto" ref={scrollRef}>
         <div className="max-w-xl mx-auto px-6 pt-[8vh] pb-6 text-left" id="hero">
-          <div className="w-14 h-14 rounded-full border border-violet-500/30 flex items-center justify-center bg-gradient-to-tr from-violet-500/10 to-transparent mb-6.5">
+          <div className="w-14 h-14 rounded-full border theme-border flex items-center justify-center theme-bg-subtle mb-6.5">
             <svg
-              className="w-6.5 h-6.5 text-violet-400"
+              className="w-6.5 h-6.5 theme-text-accent"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -48,7 +48,7 @@ export default function ChatArea({ messages, onSelectSuggestion }: ChatAreaProps
             </svg>
           </div>
           <h1 className="font-serif font-medium text-3xl md:text-4.5xl text-[#EDEBF2] leading-snug mb-3">
-            Tanya apa saja ke <span className="text-violet-400 italic">NexAi</span>.
+            Tanya apa saja ke <span className="theme-text-accent italic">NexAi</span>.
           </h1>
           <p className="text-[#8D8A99] text-sm md:text-base leading-relaxed max-w-lg">
             Asisten AI yang siap bantu mikir, nulis, ngoding, sampai bikin gambar — langsung dari browser kamu.
@@ -62,7 +62,7 @@ export default function ChatArea({ messages, onSelectSuggestion }: ChatAreaProps
               <button
                 key={idx}
                 onClick={() => onSelectSuggestion(item.query)}
-                className="shrink-0 bg-[#131318] border border-[#2B2B35] hover:border-violet-500/30 hover:bg-[#1B1B22] text-[#EDEBF2] text-xs px-3.5 py-2.5 rounded-full cursor-pointer transition-colors"
+                className="shrink-0 bg-[#131318] border border-[#2B2B35] hover:theme-border hover:theme-bg-subtle text-[#EDEBF2] text-xs px-3.5 py-2.5 rounded-full cursor-pointer transition-colors"
               >
                 {item.label}
               </button>
@@ -86,7 +86,7 @@ export default function ChatArea({ messages, onSelectSuggestion }: ChatAreaProps
               className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-mono font-medium border ${
                 m.role === "user"
                   ? "bg-[#1B1B22] border-[#2B2B35] text-[#8D8A99]"
-                  : "bg-gradient-to-tr from-violet-500/15 to-transparent border-violet-500/30 text-violet-400"
+                  : "theme-bg-subtle theme-border theme-text-accent"
               }`}
             >
               {m.role === "user" ? (
@@ -134,9 +134,9 @@ export default function ChatArea({ messages, onSelectSuggestion }: ChatAreaProps
               {m.pending ? (
                 <div className="flex items-center gap-2.5 pt-1" id="thinkingRow">
                   <div className="relative w-5.5 h-5.5 shrink-0">
-                    <div className="absolute inset-[-4px] border-1.5 border-transparent border-t-violet-500 rounded-full animate-spin" />
+                    <div className="absolute inset-[-4px] border-1.5 border-transparent border-t-[var(--theme-accent)] rounded-full animate-spin" />
                     <svg
-                      className="w-full h-full text-violet-400 animate-node-thinking"
+                      className="w-full h-full theme-text-accent animate-node-thinking"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -191,25 +191,76 @@ function formatMessageContent(content: string) {
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
+
+      // Blockquotes (> text)
+      formatted = formatted.replace(
+        /^&gt;\s?(.*)$/gm,
+        "<blockquote class='border-l-2 theme-border pl-3.5 my-2.5 py-1 text-[#E2E8F0] theme-bg-subtle/50 rounded-r-lg text-sm leading-relaxed'>$1</blockquote>"
+      );
       
-      // Headings (H1 - H6)
-      formatted = formatted.replace(/^###### (.*)$/gm, "<h6 class='text-xs font-semibold text-[#EDEBF2] mt-3 mb-1'>$1</h6>");
-      formatted = formatted.replace(/^##### (.*)$/gm, "<h5 class='text-sm font-semibold text-[#EDEBF2] mt-3 mb-1'>$1</h5>");
-      formatted = formatted.replace(/^#### (.*)$/gm, "<h4 class='text-[15px] font-semibold text-[#EDEBF2] mt-3.5 mb-1'>$1</h4>");
-      formatted = formatted.replace(/^### (.*)$/gm, "<h3 class='text-base font-semibold text-[#EDEBF2] mt-4 mb-1.5'>$1</h3>");
-      formatted = formatted.replace(/^## (.*)$/gm, "<h2 class='text-lg font-semibold text-[#EDEBF2] mt-4.5 mb-2'>$1</h2>");
-      formatted = formatted.replace(/^# (.*)$/gm, "<h1 class='text-xl font-bold text-[#EDEBF2] mt-5 mb-2'>$1</h1>");
+      // Headings (H1 - H6) - Crisp, distinct, high-contrast titles with left accent borders
+      formatted = formatted.replace(/^###### (.*)$/gm, "<h6 class='text-xs font-semibold text-[#CBD5E1] mt-2.5 mb-1'>$1</h6>");
+      formatted = formatted.replace(/^##### (.*)$/gm, "<h5 class='text-sm font-semibold text-[#E2E8F0] mt-3 mb-1'>$1</h5>");
+      formatted = formatted.replace(/^#### (.*)$/gm, "<h4 class='text-[15px] font-bold text-white mt-3.5 mb-1 pl-2 border-l-2 border-[#3B3B4C]'>$1</h4>");
+      formatted = formatted.replace(/^### (.*)$/gm, "<h3 class='text-base font-bold text-white mt-4 mb-1.5 pl-2.5 border-l-2 theme-border flex items-center gap-1.5'>$1</h3>");
+      formatted = formatted.replace(/^## (.*)$/gm, "<h2 class='text-lg font-extrabold text-white mt-4.5 mb-2 pb-1 border-b border-[#2B2B38]'>$1</h2>");
+      formatted = formatted.replace(/^# (.*)$/gm, "<h1 class='text-xl font-extrabold text-white tracking-wide mt-5 mb-2.5 pb-1 border-b border-[#383848]'>$1</h1>");
+
+      // Markdown links [label](url)
+      formatted = formatted.replace(
+        /\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g,
+        (match, label, url) => {
+          let displayLabel = label.trim();
+          if (displayLabel.startsWith("http") || displayLabel.length > 50) {
+            try {
+              displayLabel = new URL(url).hostname.replace(/^www\./, "");
+            } catch (e) {
+              displayLabel = "Kunjungi Tautan";
+            }
+          }
+          return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 theme-text-accent theme-bg-subtle theme-border border px-2.5 py-0.5 rounded-lg transition-all text-[13px] my-0.5 shrink-0 align-middle hover:opacity-90"><span class="underline">${displayLabel}</span></a>`;
+        }
+      );
+
+      // Standalone URLs (not inside markdown link tag or href attribute)
+      formatted = formatted.replace(
+        /(?<!href="|">)(https?:\/\/[^\s<"']+)/g,
+        (url) => {
+          let domain = "Link Web";
+          try {
+            domain = new URL(url).hostname.replace(/^www\./, "");
+          } catch (e) {}
+          return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 theme-text-accent theme-bg-subtle theme-border border px-2.5 py-0.5 rounded-lg transition-all text-[13px] my-0.5 shrink-0 align-middle hover:opacity-90"><span class="underline">${domain}</span></a>`;
+        }
+      );
+
+      // Horizontal dividers (compact, centered, subtle)
+      formatted = formatted.replace(/^---$/gm, "<hr class='my-3 w-20 mx-auto border-[#333342] border-t' />");
 
       // Unordered lists (bullet points starting with - or *)
-      formatted = formatted.replace(/^[*-] (.*)$/gm, "<li class='list-disc ml-5 my-1 text-[#EDEBF2]'>$1</li>");
+      formatted = formatted.replace(/^[*-] (.*)$/gm, "<li class='list-disc ml-5 my-0.5 text-[#EDEBF2] leading-relaxed'>$1</li>");
       
       // Ordered lists (numbered points)
-      formatted = formatted.replace(/^(\d+)\. (.*)$/gm, "<li class='list-decimal ml-5 my-1 text-[#EDEBF2]'>$2</li>");
+      formatted = formatted.replace(/^(\d+)\. (.*)$/gm, "<li class='list-decimal ml-5 my-0.5 text-[#EDEBF2] leading-relaxed'>$2</li>");
 
-      // Bold **text**
-      formatted = formatted.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      // Highlight syntax ==text== (Dedicated theme accent badge)
+      formatted = formatted.replace(/==([^=]+)==/g, "<mark class='bg-transparent theme-text-accent theme-bg-subtle theme-border border font-semibold px-1.5 py-0.5 rounded text-[13px]'>$1</mark>");
+
+      // Bold **text** - Crisp high-contrast white text (does not blend with theme accent)
+      formatted = formatted.replace(/\*\*([^*]+)\*\*/g, "<strong class='font-bold text-white'>$1</strong>");
+      
+      // Italic *text*
+      formatted = formatted.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em class='italic text-[#CBD5E1]'>$1</em>");
+
       // Inline code `code`
-      formatted = formatted.replace(/`([^`]+)`/g, "<code>$1</code>");
+      formatted = formatted.replace(/`([^`]+)`/g, "<code class='bg-[#181822] border border-[#2B2B38] text-amber-200/90 px-1.5 py-0.5 rounded font-mono text-[12.5px]'>$1</code>");
+
+      // Clean up excessive newlines:
+      // 1. Limit consecutive newlines to maximum 1 blank line
+      formatted = formatted.replace(/\n{3,}/g, "\n\n");
+      // 2. Strip newlines right before and after block elements so whitespace-pre-wrap doesn't create triple spacing
+      formatted = formatted.replace(/\n+(?=<h[1-6]|<blockquote|<hr|<li)/gi, "");
+      formatted = formatted.replace(/(<\/h[1-6]>|<\/blockquote>|<\/li>|<hr[^>]*>)\n+/gi, "$1");
       
       return (
         <div

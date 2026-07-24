@@ -46,9 +46,9 @@ export default function Sidebar({
       >
         {/* Brand */}
         <div className="flex items-center gap-3 pb-6 px-1.5">
-          <div className="relative w-7.5 h-7.5 rounded-full border border-violet-500/40 flex items-center justify-center bg-gradient-to-tr from-violet-500/10 to-transparent">
+          <div className="relative w-7.5 h-7.5 rounded-full border theme-border flex items-center justify-center bg-gradient-to-tr theme-bg-subtle">
             <svg
-              className="w-4 h-4 text-violet-400"
+              className="w-4 h-4 theme-text-accent"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -75,7 +75,7 @@ export default function Sidebar({
             onNewChat();
             onClose();
           }}
-          className="flex items-center justify-center gap-2 w-full bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 font-medium text-[13.5px] py-2.5 px-3.5 rounded-xl cursor-pointer transition-colors mb-5"
+          className="flex items-center justify-center gap-2 w-full theme-bg-subtle border theme-border theme-text-accent font-medium text-[13.5px] py-2.5 px-3.5 rounded-xl cursor-pointer transition-colors mb-5 hover:opacity-90"
           id="newChatBtn"
         >
           <Plus size={14} />
@@ -98,7 +98,7 @@ export default function Sidebar({
               }}
               className={`w-full text-left px-2.5 py-2 rounded-lg text-xs tracking-wide transition-colors truncate border ${
                 s.id === currentId
-                  ? "bg-[#1B1B22] border-[#2B2B35] text-violet-400 font-medium"
+                  ? "bg-[#1B1B22] theme-border theme-text-accent font-medium"
                   : "bg-transparent border-transparent text-[#8D8A99] hover:bg-[#1B1B22] hover:text-[#EDEBF2]"
               }`}
             >
@@ -129,7 +129,7 @@ export default function Sidebar({
               id="accountCard"
             >
               <div
-                className="w-7.5 h-7.5 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center font-serif text-xs font-semibold text-violet-400"
+                className="w-7.5 h-7.5 rounded-full theme-bg-subtle border theme-border flex items-center justify-center font-serif text-xs font-semibold theme-text-accent"
                 id="accountAvatar"
               >
                 {user.displayName.trim().charAt(0).toUpperCase()}
@@ -164,7 +164,7 @@ export default function Sidebar({
               </p>
               <button
                 onClick={onOpenAuthModal}
-                className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs py-2 rounded-lg transition-all cursor-pointer active:scale-98 shadow-md shadow-violet-600/20 flex items-center justify-center gap-1.5"
+                className="w-full theme-btn-primary font-semibold text-xs py-2 rounded-lg transition-all cursor-pointer active:scale-98 flex items-center justify-center gap-1.5"
                 id="loginBtn"
               >
                 <span>Masuk / Daftar</span>

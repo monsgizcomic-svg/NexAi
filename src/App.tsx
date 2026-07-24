@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Message, Session, Attachment, User } from "./types";
 import Sidebar from "./components/Sidebar";
-import Topbar from "./components/Topbar";
+import Topbar, { ThemeMode } from "./components/Topbar";
 import ChatArea from "./components/ChatArea";
 import InputZone from "./components/InputZone";
 import AuthModal from "./components/AuthModal";
@@ -13,12 +13,23 @@ export default function App() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [currentId, setCurrentId] = useState<number | null>(null);
 
+  // Theme state
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    const saved = localStorage.getItem("nexai_theme");
+    return (saved as ThemeMode) || "violet";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("nexai_theme", theme);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
   // Active form state
   const [input, setInput] = useState("");
   const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([]);
   const [webSearch, setWebSearch] = useState(false);
   const [deepResearch, setDeepResearch] = useState(false);
-  const [model, setModel] = useState("nexai-2.9");
+  const [model, setModel] = useState("nexai-3.5");
   const [effort, setEffort] = useState("sedang");
   const [isRecording, setIsRecording] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -516,7 +527,10 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-[#0A0A0F] text-[#EDEBF2] overflow-hidden">
+    <div className="flex h-screen bg-[#0A0A0F] text-[#EDEBF2] overflow-hidden relative" data-theme={theme}>
+      {/* Dynamic Ambient Theme Glow Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--theme-accent-bg),transparent_65%)] pointer-events-none opacity-80 transition-all duration-500 z-0" />
+
       <Sidebar
         sessions={sessions}
         currentId={currentId}
@@ -539,6 +553,8 @@ export default function App() {
           user={user}
           onOpenAuthModal={() => setAuthModalOpen(true)}
           onLogout={handleLogout}
+          theme={theme}
+          setTheme={setTheme}
         />
 
         {/* Incognito mode banner indicator */}
