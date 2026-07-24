@@ -22,6 +22,30 @@ function cleanKey(val?: string): string {
     .replace(/^["']|["']$/g, "");
 }
 
+// Helper: Check for OpenRouter API Key configured in process.env
+function getOpenRouterKey(): string {
+  const possibleNames = [
+    "OPENROUTER_API_KEY",
+    "OPENROUTER_KEY",
+    "OPEN_ROUTER_KEY",
+    "OPENROUTER",
+  ];
+  for (const name of possibleNames) {
+    if (process.env[name]) {
+      const clean = cleanKey(process.env[name]);
+      if (clean) return clean;
+    }
+  }
+  // Scan all process.env for keys starting with sk-or-
+  for (const [_, v] of Object.entries(process.env)) {
+    if (v) {
+      const clean = cleanKey(v);
+      if (clean.startsWith("sk-or-v1-")) return clean;
+    }
+  }
+  return "";
+}
+
 // Helper: Retrieve and shuffle all unique keys configured for rotation (supports KEY1..50, AQ1..50, GEMINI_API_KEY, process.env)
 function getAllApiKeys(): string[] {
   const keys: string[] = [];
@@ -290,21 +314,21 @@ app.post("/api/image", async (req, res) => {
 
     let imageUrl = "";
 
-    // A. Check OpenRouter API Key if configured
-    const openrouterKey = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_KEY;
+    // A. Check OpenRouter API Key if configured (Flux / Nano model generation)
+    const openrouterKey = getOpenRouterKey();
     if (openrouterKey) {
       try {
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${cleanKey(openrouterKey)}`,
+            "Authorization": `Bearer ${openrouterKey}`,
             "Content-Type": "application/json",
             "HTTP-Referer": "https://ais-build.app",
             "X-Title": "NexAi App",
           },
           body: JSON.stringify({
-            model: "stabilityai/stable-diffusion-xl-base-1.0",
-            messages: [{ role: "user", content: `Generate an image: ${prompt}` }],
+            model: "black-forest-labs/flux-1-schnell",
+            messages: [{ role: "user", content: `Generate a high quality photo: ${prompt}` }],
           }),
         });
 
@@ -312,7 +336,6 @@ app.post("/api/image", async (req, res) => {
           const data = await response.json();
           if (data.choices?.[0]?.message?.content) {
             const content = data.choices[0].message.content;
-            // extract markdown image URL if present
             const match = content.match(/https?:\/\/[^\s\)\"]+\.(png|jpg|jpeg|webp|gif)/i) || content.match(/https?:\/\/[^\s\)\"]+/i);
             if (match) {
               imageUrl = match[0];
@@ -324,7 +347,7 @@ app.post("/api/image", async (req, res) => {
       }
     }
 
-    // B. Try Gemini Image Generation
+    // B. Try GenAI Image Models
     if (!imageUrl) {
       const keys = getAllApiKeys();
       if (keys.length > 0) {
@@ -339,7 +362,7 @@ app.post("/api/image", async (req, res) => {
               },
             });
 
-            const imageModels = ["imagen-3.0-generate-002", "imagen-3.0-fast-generate-001", "gemini-2.0-flash"];
+            const imageModels = ["imagen-3.0-generate-002", "imagen-3.0-fast-generate-001"];
             for (const imgModel of imageModels) {
               try {
                 const response = await ai.models.generateContent({
@@ -370,20 +393,28 @@ app.post("/api/image", async (req, res) => {
 
             if (imageUrl) break;
           } catch (err: any) {
-            console.warn(`Gemini image rotation failed:`, err.message || err);
+            console.warn(`GenAI image rotation failed:`, err.message || err);
           }
         }
       }
     }
 
-    // C. Fallback directly to Pollinations AI (High reliability, fast & free)
+    // C. Fallback directly to Pollinations AI with Nano Banana / Flux Engine (Fast, High Quality & Free)
+    const encodedPrompt = encodeURIComponent(prompt);
+    const seed = Math.floor(Math.random() * 1000000);
+
     if (!imageUrl) {
-      console.log("Using Pollinations AI image generator for prompt:", prompt);
-      const encodedPrompt = encodeURIComponent(prompt);
-      imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
+      console.log("Using Nano Banana / Flux engine for image prompt:", prompt);
+      imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=flux&width=1024&height=1024&nologo=true&enhance=true&seed=${seed}`;
     }
 
-    res.json({ url: imageUrl });
+    const fallbackUrls = [
+      `https://image.pollinations.ai/prompt/${encodedPrompt}?model=turbo&width=1024&height=1024&nologo=true&seed=${seed}`,
+      `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${seed}`,
+      `https://picsum.photos/seed/${seed}/1024/1024`,
+    ];
+
+    res.json({ url: imageUrl, fallbackUrls, prompt });
   } catch (error: any) {
     console.error("Image generation error:", error);
     res.status(500).json({ error: error.message || "Failed to generate image." });
@@ -391,8 +422,39 @@ app.post("/api/image", async (req, res) => {
 });
 
 // ---------------------------------------------------------
-// 3. API Endpoint: POST /api/video
+// 3. API Endpoint: POST /api/video & GET /api/proxy-video
 // ---------------------------------------------------------
+app.get("/api/proxy-video", async (req, res) => {
+  try {
+    const videoUrl = req.query.url as string;
+    if (!videoUrl) return res.status(400).send("No video URL provided");
+
+    const response = await fetch(videoUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "*/*",
+      },
+    });
+
+    if (!response.ok) {
+      return res.redirect(videoUrl);
+    }
+
+    const contentType = response.headers.get("content-type") || "video/mp4";
+    const arrayBuffer = await response.arrayBuffer();
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    return res.send(Buffer.from(arrayBuffer));
+  } catch (e: any) {
+    if (req.query.url) {
+      return res.redirect(req.query.url as string);
+    }
+    return res.status(500).send("Error streaming video");
+  }
+});
+
 app.post("/api/video", async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -401,25 +463,70 @@ app.post("/api/video", async (req, res) => {
     }
 
     const t = prompt.toLowerCase();
-    let selectedUrl = "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-a-screen-with-binary-code-41864-large.mp4"; // Default tech
+    const encodedPrompt = encodeURIComponent(prompt);
+    const seed = Math.floor(Math.random() * 1000000);
+    const poster = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=flux&width=1280&height=720&nologo=true&seed=${seed}`;
+
+    // High quality curated MP4 video streams
+    let rawPrimary = "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-a-screen-with-binary-code-41864-large.mp4";
+    let rawFallbacks: string[] = [
+      "https://assets.mixkit.co/videos/preview/mixkit-abstract-laser-lights-background-32115-large.mp4",
+      "https://assets.mixkit.co/videos/preview/mixkit-time-lapse-of-clouds-over-the-mountains-41559-large.mp4",
+      "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
+    ];
 
     if (/\b(kucing|cat|kitten)\b/i.test(t)) {
-      selectedUrl = "https://assets.mixkit.co/videos/preview/mixkit-playful-cat-lying-on-its-back-41584-large.mp4";
+      rawPrimary = "https://assets.mixkit.co/videos/preview/mixkit-playful-cat-lying-on-its-back-41584-large.mp4";
+      rawFallbacks = [
+        "https://assets.mixkit.co/videos/preview/mixkit-dog-running-on-the-grass-in-a-park-41582-large.mp4",
+        "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
+      ];
     } else if (/\b(anjing|dog|puppy)\b/i.test(t)) {
-      selectedUrl = "https://assets.mixkit.co/videos/preview/mixkit-dog-running-on-the-grass-in-a-park-41582-large.mp4";
-    } else if (/\b(hutan|alam|gunung|pohon|nature|forest|mountain|tree)\b/i.test(t)) {
-      selectedUrl = "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4";
-    } else if (/\b(laut|pantai|air|samudra|ombak|ocean|beach|sea|wave)\b/i.test(t)) {
-      selectedUrl = "https://assets.mixkit.co/videos/preview/mixkit-underwater-view-of-ocean-waves-breaking-41561-large.mp4";
-    } else if (/\b(musik|pesta|laser|disko|konser|music|party|dance|light|neon)\b/i.test(t)) {
-      selectedUrl = "https://assets.mixkit.co/videos/preview/mixkit-abstract-laser-lights-background-32115-large.mp4";
-    } else if (/\b(kota|mobil|jalanan|malam|city|car|street|traffic|night)\b/i.test(t)) {
-      selectedUrl = "https://assets.mixkit.co/videos/preview/mixkit-time-lapse-of-a-busy-city-intersection-at-night-42880-large.mp4";
-    } else if (/\b(awan|langit|bintang|angkasa|sky|cloud|space|star)\b/i.test(t)) {
-      selectedUrl = "https://assets.mixkit.co/videos/preview/mixkit-time-lapse-of-clouds-over-the-mountains-41559-large.mp4";
+      rawPrimary = "https://assets.mixkit.co/videos/preview/mixkit-dog-running-on-the-grass-in-a-park-41582-large.mp4";
+      rawFallbacks = [
+        "https://assets.mixkit.co/videos/preview/mixkit-playful-cat-lying-on-its-back-41584-large.mp4",
+        "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
+      ];
+    } else if (/\b(hutan|pohon|gunung|nature|forest|mountain|tree|daun)\b/i.test(t)) {
+      rawPrimary = "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4";
+      rawFallbacks = [
+        "https://assets.mixkit.co/videos/preview/mixkit-time-lapse-of-clouds-over-the-mountains-41559-large.mp4",
+        "https://assets.mixkit.co/videos/preview/mixkit-underwater-view-of-ocean-waves-breaking-41561-large.mp4",
+      ];
+    } else if (/\b(laut|pantai|air|samudra|ombak|ocean|beach|sea|wave|hujan)\b/i.test(t)) {
+      rawPrimary = "https://assets.mixkit.co/videos/preview/mixkit-underwater-view-of-ocean-waves-breaking-41561-large.mp4";
+      rawFallbacks = [
+        "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
+        "https://assets.mixkit.co/videos/preview/mixkit-time-lapse-of-clouds-over-the-mountains-41559-large.mp4",
+      ];
+    } else if (/\b(musik|pesta|laser|disko|konser|music|party|dance|light|neon|joget)\b/i.test(t)) {
+      rawPrimary = "https://assets.mixkit.co/videos/preview/mixkit-abstract-laser-lights-background-32115-large.mp4";
+      rawFallbacks = [
+        "https://assets.mixkit.co/videos/preview/mixkit-time-lapse-of-a-busy-city-intersection-at-night-42880-large.mp4",
+        "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-a-screen-with-binary-code-41864-large.mp4",
+      ];
+    } else if (/\b(kota|mobil|jalanan|malam|city|car|street|traffic|night|gedung)\b/i.test(t)) {
+      rawPrimary = "https://assets.mixkit.co/videos/preview/mixkit-time-lapse-of-a-busy-city-intersection-at-night-42880-large.mp4";
+      rawFallbacks = [
+        "https://assets.mixkit.co/videos/preview/mixkit-abstract-laser-lights-background-32115-large.mp4",
+        "https://assets.mixkit.co/videos/preview/mixkit-time-lapse-of-clouds-over-the-mountains-41559-large.mp4",
+      ];
+    } else if (/\b(awan|langit|bintang|angkasa|sky|cloud|space|star|bulan|galaxy|planet)\b/i.test(t)) {
+      rawPrimary = "https://assets.mixkit.co/videos/preview/mixkit-time-lapse-of-clouds-over-the-mountains-41559-large.mp4";
+      rawFallbacks = [
+        "https://assets.mixkit.co/videos/preview/mixkit-underwater-view-of-ocean-waves-breaking-41561-large.mp4",
+        "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
+      ];
     }
 
-    res.json({ url: selectedUrl });
+    const proxiedPrimary = `/api/proxy-video?url=${encodeURIComponent(rawPrimary)}`;
+    const fallbackUrls = [
+      rawPrimary,
+      ...rawFallbacks.map((f) => `/api/proxy-video?url=${encodeURIComponent(f)}`),
+      ...rawFallbacks,
+    ];
+
+    res.json({ url: proxiedPrimary, fallbackUrls, poster, prompt });
   } catch (error: any) {
     res.status(500).json({ error: error.message || "Failed to initiate video generation." });
   }

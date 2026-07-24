@@ -493,6 +493,8 @@ export default function App() {
                     content: "",
                     imageUrl: kind === "image" ? data.url : undefined,
                     videoUrl: kind === "video" ? data.url : undefined,
+                    fallbackUrls: data.fallbackUrls || [],
+                    mediaTitle: data.prompt || prompt,
                   };
                 }
                 return m;

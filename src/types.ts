@@ -4,6 +4,8 @@ export interface Message {
   pending?: boolean;
   imageUrl?: string;
   videoUrl?: string;
+  fallbackUrls?: string[];
+  mediaTitle?: string;
   attachNames?: string[];
 }
 

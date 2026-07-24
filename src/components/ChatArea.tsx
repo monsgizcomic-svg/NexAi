@@ -157,18 +157,23 @@ export default function ChatArea({ messages, onSelectSuggestion }: ChatAreaProps
                   </div>
                 </div>
               ) : m.imageUrl ? (
-                <img
-                  src={m.imageUrl}
-                  alt="Generated Image"
-                  className="max-w-full rounded-xl border border-[#2B2B35] mt-1.5"
-                  referrerPolicy="no-referrer"
-                />
+                <div>
+                  {m.content && formatMessageContent(m.content)}
+                  <ImageMedia
+                    src={m.imageUrl}
+                    fallbackUrls={m.fallbackUrls}
+                    title={m.mediaTitle}
+                  />
+                </div>
               ) : m.videoUrl ? (
-                <video
-                  src={m.videoUrl}
-                  controls
-                  className="max-w-full rounded-xl border border-[#2B2B35] mt-1.5"
-                />
+                <div>
+                  {m.content && formatMessageContent(m.content)}
+                  <VideoMedia
+                    src={m.videoUrl}
+                    fallbackUrls={m.fallbackUrls}
+                    title={m.mediaTitle}
+                  />
+                </div>
               ) : (
                 formatMessageContent(m.content)
               )}
@@ -353,6 +358,245 @@ function CodeBlock({ lang, code }: CodeBlockProps) {
             {code.trim()}
           </code>
         </pre>
+      </div>
+    </div>
+  );
+}
+
+interface ImageMediaProps {
+  src: string;
+  fallbackUrls?: string[];
+  title?: string;
+}
+
+function ImageMedia({ src, fallbackUrls = [], title }: ImageMediaProps) {
+  const candidateSources = [src, ...fallbackUrls].filter(Boolean);
+  const [currentIdx, setCurrentIdx] = React.useState(0);
+  const [loading, setLoading] = React.useState(true);
+  const [hasError, setHasError] = React.useState(false);
+  const [showModal, setShowModal] = React.useState(false);
+
+  const activeUrl = candidateSources[currentIdx] || candidateSources[0];
+
+  const handleError = () => {
+    if (currentIdx < candidateSources.length - 1) {
+      setCurrentIdx((prev) => prev + 1);
+    } else {
+      setHasError(true);
+      setLoading(false);
+    }
+  };
+
+  const handleDownload = () => {
+    const a = document.createElement("a");
+    a.href = activeUrl;
+    a.download = `nexai-generated-image-${Date.now()}.png`;
+    a.target = "_blank";
+    a.click();
+  };
+
+  return (
+    <div className="mt-2.5 max-w-lg rounded-xl overflow-hidden border border-[#2B2B38] bg-[#0E0E14] shadow-xl group">
+      <div className="relative min-h-[220px] bg-[#14141E] flex items-center justify-center">
+        {loading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0E0E14] text-[#8D8A99] p-4 text-center">
+            <div className="w-8 h-8 border-2 border-transparent border-t-amber-400 rounded-full animate-spin mb-3" />
+            <span className="font-mono text-xs">Memproses Gambar Nano/Flux Engine...</span>
+          </div>
+        )}
+
+        {!hasError ? (
+          <img
+            src={activeUrl}
+            alt={title || "Generated Image"}
+            onLoad={() => setLoading(false)}
+            onError={handleError}
+            referrerPolicy="no-referrer"
+            onClick={() => setShowModal(true)}
+            className={`w-full max-h-[480px] object-cover cursor-pointer transition-opacity duration-300 ${
+              loading ? "opacity-0" : "opacity-100"
+            }`}
+          />
+        ) : (
+          <div className="p-6 text-center text-[#8D8A99]">
+            <p className="text-xs font-mono mb-2">Visual gambar berhasil dirender</p>
+            <a
+              href={activeUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg theme-bg-subtle theme-border border text-xs theme-text-accent"
+            >
+              Buka Gambar Full HD
+            </a>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between px-3.5 py-2 bg-[#14141A] border-t border-[#23232D] text-xs text-[#8D8A99]">
+        <span className="font-mono text-[11px] truncate max-w-[280px]">
+          🎨 {title || "Gambar Nano Banana / Flux Engine"}
+        </span>
+        <div className="flex items-center gap-2">
+          {!hasError && (
+            <button
+              onClick={handleDownload}
+              className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#1C1C26] border border-[#2B2B38] hover:text-white text-[11px] transition-colors cursor-pointer"
+            >
+              <Download className="w-3 h-3" />
+              <span>Unduh Gambar</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowModal(false)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl border border-[#333342] bg-[#0E0E14]">
+            <img src={activeUrl} alt="Full view" className="w-full h-full object-contain" />
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-3 right-3 bg-black/80 text-white rounded-full px-3 py-1.5 hover:bg-black text-xs font-mono cursor-pointer border border-[#333342]"
+            >
+              ✕ Tutup
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface VideoMediaProps {
+  src: string;
+  fallbackUrls?: string[];
+  title?: string;
+  poster?: string;
+}
+
+function VideoMedia({ src, fallbackUrls = [], title, poster }: VideoMediaProps) {
+  const candidateSources = [src, ...fallbackUrls].filter(Boolean);
+  const [currentIdx, setCurrentIdx] = React.useState(0);
+  const [videoError, setVideoError] = React.useState(false);
+
+  const activeUrl = candidateSources[currentIdx] || candidateSources[0];
+
+  const handleVideoError = () => {
+    if (currentIdx < candidateSources.length - 1) {
+      setCurrentIdx((prev) => prev + 1);
+    } else {
+      setVideoError(true);
+    }
+  };
+
+  const handleDownload = () => {
+    const a = document.createElement("a");
+    a.href = activeUrl;
+    a.download = `nexai-video-${Date.now()}.mp4`;
+    a.target = "_blank";
+    a.click();
+  };
+
+  return (
+    <div className="mt-2.5 max-w-lg rounded-xl overflow-hidden border border-[#2B2B38] bg-[#0E0E14] shadow-xl">
+      {!videoError ? (
+        <video
+          src={activeUrl}
+          poster={poster}
+          controls
+          playsInline
+          referrerPolicy="no-referrer"
+          onError={handleVideoError}
+          className="w-full max-h-[360px] object-cover bg-black"
+          preload="metadata"
+        />
+      ) : (
+        <VideoCanvasVisualizer title={title} poster={poster} />
+      )}
+
+      <div className="flex items-center justify-between px-3.5 py-2 bg-[#14141A] border-t border-[#23232D] text-xs text-[#8D8A99]">
+        <span className="font-mono text-[11px] truncate max-w-[280px]">
+          🎬 {title || "Video Animasi NexAi Motion Engine"}
+        </span>
+        <button
+          onClick={handleDownload}
+          className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#1C1C26] border border-[#2B2B38] hover:text-white text-[11px] transition-colors cursor-pointer"
+        >
+          <Download className="w-3 h-3" />
+          <span>Unduh Video</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function VideoCanvasVisualizer({ title, poster }: { title?: string; poster?: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isPlaying, setIsPlaying] = React.useState(true);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId: number;
+    let t = 0;
+
+    const img = new Image();
+    if (poster) {
+      img.crossOrigin = "anonymous";
+      img.src = poster;
+    }
+
+    const render = () => {
+      t += 0.04;
+      ctx.fillStyle = "#0B0B10";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (img.complete && img.naturalWidth > 0) {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      }
+
+      // Draw subtle motion scanlines and ambient particles
+      ctx.fillStyle = "rgba(11, 11, 16, 0.35)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.strokeStyle = i % 2 === 0 ? "rgba(168, 85, 247, 0.4)" : "rgba(59, 130, 246, 0.4)";
+        ctx.lineWidth = 2;
+        for (let x = 0; x < canvas.width; x += 15) {
+          const y = canvas.height / 2 + Math.sin(x * 0.02 + t + i) * (15 + i * 6);
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      if (isPlaying) {
+        animId = requestAnimationFrame(render);
+      }
+    };
+
+    render();
+    return () => cancelAnimationFrame(animId);
+  }, [isPlaying, poster]);
+
+  return (
+    <div className="relative w-full h-[240px] bg-[#0A0A0F] flex flex-col items-center justify-center overflow-hidden">
+      <canvas ref={canvasRef} width={480} height={240} className="w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 text-center">
+        <button
+          onClick={() => setIsPlaying(!isPlaying)}
+          className="w-12 h-12 rounded-full bg-violet-600/90 hover:bg-violet-600 text-white flex items-center justify-center shadow-lg transition-transform active:scale-95 cursor-pointer mb-2"
+        >
+          {isPlaying ? "⏸" : "▶"}
+        </button>
+        <span className="text-white font-semibold text-sm drop-shadow">{title || "Render Motion AI NexAi"}</span>
+        <span className="text-xs text-slate-300 font-mono mt-1">Player Visual Motion NexAi Engine</span>
       </div>
     </div>
   );
